@@ -4,6 +4,7 @@
     <property file="build.properties"/>
     <property name="project.name" value="pg-inet-types"/>
     <property name="project.version" value="dev"/>
+    <property name="project.major.version" value="1.0"/>
     <property name="ivy.version" value="2.2.0-rc1"/>
     <property name="ivy.settings.dir" value="settings"/>
     <property name="ivy.settings.file" value="ivysettings.xml"/>
@@ -64,6 +65,8 @@
 
     <!-- =========================================================================================================== -->
     <target name="generate-version" depends="install-ivy" if="release.build">
+        <fail unless="project.name"/>
+        <fail unless="project.major.version"/>
         <ivy:buildnumber organisation="m6" module="${project.name}" revision="${project.major.version}."/>
     </target>
 
