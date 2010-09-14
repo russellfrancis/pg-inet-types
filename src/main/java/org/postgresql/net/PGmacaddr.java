@@ -31,7 +31,7 @@ import org.postgresql.util.PSQLState;
  *	</ul>
  *	</p>
  *
- *	@author Russell Francis &lt; rfrancis@ev.net &gt;
+ *	@author Russell Francis (russ@metro-six.com)
  */	
 public class PGmacaddr extends PGobject implements Serializable, Cloneable
 {
@@ -108,7 +108,7 @@ public class PGmacaddr extends PGobject implements Serializable, Cloneable
 		PGtokenizer t = new PGtokenizer( v, ':' );
 		if( ( t.getSize() == 6 ) || ( t.getSize() == 2 ) )
 		{
-			strippedMacAddr = PGtokenizer.strip( v, ':' ); 
+			strippedMacAddr = strip( v, ':' ); 
 		}
 
 		if( strippedMacAddr == null )
@@ -118,7 +118,7 @@ public class PGmacaddr extends PGobject implements Serializable, Cloneable
 			t = new PGtokenizer( v, '-' );
 			if( ( t.getSize() == 2 ) || ( t.getSize() == 6 ) )
 			{
-				strippedMacAddr = PGtokenizer.strip( v, '-' );
+				strippedMacAddr = strip( v, '-' );
 			}
 		}
 
@@ -129,7 +129,7 @@ public class PGmacaddr extends PGobject implements Serializable, Cloneable
 			t = new PGtokenizer( v, '.' );
 			if( t.getSize() == 3 )
 			{
-				strippedMacAddr = PGtokenizer.strip( v, '.' );
+				strippedMacAddr = strip( v, '.' );
 			}
 		}
 
@@ -250,5 +250,28 @@ public class PGmacaddr extends PGobject implements Serializable, Cloneable
 		}
 
 		return( this.strMac );
+	}
+
+	/**
+	 *	This method will remove all occurences of char
+	 *	from a string.
+	 *
+	 *	@param s The string to strip.
+	 *	@param ch The character to strip from s.
+	 *	@return A new string without any occurences of
+	 *		ch.
+	 */
+	private String strip( String s, char ch )
+	{
+		StringBuffer str = new StringBuffer();
+		for( int i = 0; i < s.length(); ++i )
+		{
+			char c = s.charAt( i );
+			if( c != ch )
+			{
+				str.append( c );
+			}
+		}
+		return( str.toString() );
 	}
 }

@@ -15,7 +15,7 @@ import java.net.*;
 /**
  *	Unit tests for the PGcidr data type.
  *
- *	@author Russell Francis &lt; rfrancis@ev.net &gt;
+ *	@author Russell Francis (russ@metro-six.com)
  */
 public class PGcidrTest extends TestCase
 {

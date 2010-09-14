@@ -15,7 +15,7 @@ import java.net.*;
 /**
  *	Unit tests for the PGmacaddr data type.
  *
- *	@author Russell Francis &lt; rfrancis@ev.net &gt;
+ *	@author Russell Francis (russ@metro-six.com)
  */
 public class PGmacaddrTest extends TestCase
 {

@@ -9,7 +9,6 @@ package org.postgresql.net;
 import java.io.Serializable;
 import java.sql.SQLException;
 import org.postgresql.util.GT;
-import org.postgresql.util.PGobject;
 import org.postgresql.util.PGtokenizer;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.PSQLState;
@@ -18,7 +17,7 @@ import org.postgresql.util.PSQLState;
  *	This represents org.postgresql's cidr datatype, which is
  *	used to hold both IPV4 &amp; IPV6 network addresses.
  *
- *	@author Russell Francis &lt; rfrancis@ev.net &gt;
+ *	@author Russell Francis (russ@metro-six.com)
  */
 public class PGcidr extends PGNetworkBase implements Serializable, Cloneable
 {
