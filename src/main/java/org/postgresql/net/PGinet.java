@@ -9,8 +9,6 @@ package org.postgresql.net;
 import java.io.Serializable;
 import java.sql.SQLException;
 import org.postgresql.util.GT;
-import org.postgresql.util.PGobject;
-import org.postgresql.util.PGtokenizer;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.PSQLState;
 
@@ -28,7 +26,7 @@ import org.postgresql.util.PSQLState;
  *	<p>See [RFC 2373] and [RFC 2732]
  *	for the complete description of how to specify an IPv6 address.</p>
  *
- *	@author Russell Francis &lt; rfrancis@ev.net &gt;
+ *	@author Russell Francis (russ@metro-six.com)
  */
 public class PGinet extends PGNetworkBase implements Serializable, Cloneable
 {

@@ -1,14 +1,16 @@
 package org.postgresql.net;
 
 import java.io.Serializable;
-import java.sql.SQLException;
 import org.postgresql.util.GT;
 import org.postgresql.util.PGobject;
 import org.postgresql.util.PGtokenizer;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.PSQLState;
 
-
+/**
+ *
+ * @author Russell Francis (russ@metro-six.com)
+ */
 class PGNetworkBase extends PGobject implements Serializable, Cloneable
 {
 	protected byte[] addr;
