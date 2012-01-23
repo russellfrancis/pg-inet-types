@@ -10,6 +10,7 @@ import org.postgresql.util.PSQLState;
 /**
  *
  * @author Russell Francis (russ@metro-six.com)
+ * @author Ancoron Luciferis (ancoron.luciferis (AT) googlemail.com)
  */
 class PGNetworkBase extends PGobject implements Serializable, Cloneable
 {
@@ -193,8 +194,8 @@ class PGNetworkBase extends PGobject implements Serializable, Cloneable
 
 			// Process the tail.
 			int j = 15;
-			k = 0;
-			for(;k < tailSize; ++k )
+			k = tailSize - 1;
+			for(;k >= 0; --k )
 			{
 				String chunk = tailTokenizer.getToken( k );
 				if( chunk.length() > 0 )
