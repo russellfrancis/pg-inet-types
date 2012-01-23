@@ -140,6 +140,37 @@
             </fileset>
         </jar>
     </target>
+    
+    <!-- =========================================================================================================== -->
+    <target name="test-findbugs" depends="dist,install-findbugs">
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${dist.dir}/reports"/>
+        <mkdir dir="${dist.dir}/reports/main"/>
+        <mkdir dir="${dist.dir}/reports/main/findbugs-xml"/>
+        <mkdir dir="${dist.dir}/reports/main/findbugs-html"/>
+        <findbugs   home="${build.dir}/findbugs"
+                    output="xml"
+                    outputFile="${dist.dir}/reports/main/findbugs-xml/findbugs.xml"
+                    effort="max"
+                    jvmargs="-Xmx256m">
+            <auxClasspath>
+                <path refid="compile.classpath"/>
+            </auxClasspath>
+            <sourcePath path="${src.dir}/main/java"/>
+            <class location="${build.dir}/main"/>
+        </findbugs>
+        <findbugs   home="${build.dir}/findbugs"
+                    output="html"
+                    outputFile="${dist.dir}/reports/main/findbugs-html/findbugs.html"
+                    effort="max"
+                    jvmargs="-Xmx256m">
+            <auxClasspath>
+                <path refid="compile.classpath"/>
+            </auxClasspath>
+            <sourcePath path="${src.dir}/main/java"/>
+            <class location="${build.dir}/main"/>
+        </findbugs>
+    </target>
 
     <!-- =========================================================================================================== -->
     <!-- ==== INSTALL DEPENDENCY TARGETS =========================================================================== -->
