@@ -6,42 +6,44 @@
 */
 package org.postgresql.test.net;
 
-import org.postgresql.test.TestUtil;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.postgresql.net.PGinet;
-import junit.framework.TestCase;
 import java.sql.*;
-import java.net.*;
 
 /**
  *	Unit tests for the PGinet data type.
  *
  *	@author Russell Francis (russ@metro-six.com)
  */
-public class PGinetTest extends TestCase
+public class PGinetTest extends BaseDatabaseTest
 {
 	private Connection dbConn;
 	private static final String tableName = "testpginet";
 
-	public PGinetTest( String name )
+	@Before
+	public void setUp() throws Exception
 	{
-		super( name );
+		dbConn = openDB();
+		createTable( dbConn, this.tableName, "address inet" );
 	}
 
-	protected void setUp() throws Exception
+	@After
+	public void tearDown() throws Exception
 	{
-		dbConn = TestUtil.openDB();
-		TestUtil.createTable( dbConn, this.tableName, "address inet" );
-	}
-
-	protected void tearDown() throws Exception
-	{
-		TestUtil.dropTable( dbConn, this.tableName );
+		dropTable( dbConn, this.tableName );
 	}
 
 	/**
  	 * 	This method will test that the PGinet type refuses to create
 	 *	objects when passed invalid IPv4 based addresses.
 	 */
+	@Test
 	public void testPGinetIPv4InvalidAddresses() 
 	throws SQLException
 	{
@@ -65,11 +67,10 @@ public class PGinetTest extends TestCase
 		};
 
 		// Test that we can create networks 
-		for( int i = 0; i < invalidAddresses.length; ++i )
-		{	
-			PGinet address = this.makePGinet( invalidAddresses[i] );
-			assertNull( "An invalid address was turned into a PGinet object: " + 
-				invalidAddresses[i] + "' failed.", address );
+		for (String invalidAddress : invalidAddresses) {
+			PGinet address = this.makePGinet(invalidAddress);
+			assertNull("An invalid address was turned into a PGinet object: " +
+					invalidAddress + "' failed.", address);
 		}
 	}
 
@@ -81,6 +82,7 @@ public class PGinetTest extends TestCase
 	 *	and the they can be read from Postgres and that they maintain
 	 *	equality after the ordeal.</p>
 	 */
+	@Test
 	public void testPGinetIPv4ValidAddresses() throws SQLException
 	{
 		// Each address should be unique in the list or this test
@@ -101,7 +103,8 @@ public class PGinetTest extends TestCase
  	 * 	This method will test that the PGinet type refuses to create
 	 *	objects when passed invalid IPv6 based addresses.
 	 */
-	public void testPGinetIPv6InvalidAddresses() throws SQLException
+	@Test
+	public void testPGinetIPv6InvalidAddresses()
 	{
 		String[] invalidAddresses = {
 			"1234:1234:1234:1234:1234:1234:1234:1234:",			// superfluous trailing ':'
@@ -114,11 +117,10 @@ public class PGinetTest extends TestCase
 		};
 
 		// Test that we cannot create the addresses
-		for( int i = 0; i < invalidAddresses.length; ++i )
-		{	
-			PGinet address = this.makePGinet( invalidAddresses[i] );
-			assertNull( "An invalid address was turned into a PGinet object: " + 
-				invalidAddresses[i] + "' failed.", address );
+		for (String invalidAddress : invalidAddresses) {
+			PGinet address = this.makePGinet(invalidAddress);
+			assertNull("An invalid address was turned into a PGinet object: " +
+					invalidAddress + "' failed.", address);
 		}
 	}
 
@@ -130,6 +132,7 @@ public class PGinetTest extends TestCase
 	 *	and the they can be read from Postgres and that they maintain
 	 *	equality after the ordeal.</p>
 	 */
+	@Test
 	public void testPGinetIPv6ValidAddresses() throws SQLException
 	{
 		// Each address should be unique in the list or this test
@@ -162,47 +165,60 @@ public class PGinetTest extends TestCase
 	 *
 	 *	@param validAddresses an array of valid inet addresses.
 	 */
-	private void ensureValidAddresses( String[] validAddresses )
-	throws SQLException
+	private void ensureValidAddresses( String[] validAddresses ) throws SQLException
 	{
-		// Insert each of the networks into the table.
-		PreparedStatement s = dbConn.prepareStatement( TestUtil.insertSQL( tableName, "?" ) );
-		for( int i = 0;i < validAddresses.length; ++i )
-		{
-			PGinet address = this.makePGinet( validAddresses[i] );
-			assertNotNull( "A valid address was unable to be converted into a PGinet object: '" +
-				validAddresses[i] + "' failed.", address );
+    // Insert each of the networks into the table.
+    try (PreparedStatement s =
+        dbConn.prepareStatement("INSERT INTO " + tableName + " (address) VALUES (?);")) {
+      for (String value : validAddresses) {
+        PGinet address = this.makePGinet(value);
+        assertNotNull(
+            "A valid address was unable to be converted into a PGinet object: '"
+                + value
+                + "' failed.",
+            address);
 
-			s.setObject( 1, address );
-			assertEquals( 1, s.executeUpdate() );
+        s.setObject(1, address);
+        assertEquals(1, s.executeUpdate());
+      }
 		}
 
-		s = dbConn.prepareStatement( "SELECT * FROM " + tableName + " WHERE address = ?" );
-		// Retrieve each of the networks from the table.
-		for( int i = 0; i < validAddresses.length; ++i )
-		{
-			PGinet address = this.makePGinet( validAddresses[i] );
-			assertNotNull( "A valid address was unable to be converted into a PGinet object: '" +
-				validAddresses[i] + "' failed.", address );
+    try (PreparedStatement s =
+        dbConn.prepareStatement("SELECT * FROM " + tableName + " WHERE address = ?")) {
+      // Retrieve each of the networks from the table.
+      for (String validAddress : validAddresses) {
+        PGinet address = this.makePGinet(validAddress);
+        assertNotNull(
+            "A valid address was unable to be converted into a PGinet object: '"
+                + validAddress
+                + "' failed.",
+            address);
 
-			s.setObject( 1, address );
-			ResultSet rs = 	s.executeQuery();
-			int count = 0;
-			while( rs.next() )
-			{
-				PGinet fetchedAddress = (PGinet)rs.getObject( 1 );
-				assertNotNull( "Unable to fetch inserted network from the database: '" + validAddresses[i] +
-					"' failed.", address );
+        s.setObject(1, address);
+				int count = 0;
+        try (ResultSet rs = s.executeQuery()) {
+          while (rs.next()) {
+            PGinet fetchedAddress = (PGinet) rs.getObject(1);
+            assertNotNull(
+                "Unable to fetch inserted network from the database: '"
+                    + validAddress
+                    + "' failed.",
+                address);
 
-				assertEquals( "The retrieved address and the inserted address are not equal!",
-					fetchedAddress, address );
+            assertEquals(
+                "The retrieved address and the inserted address are not equal!",
+                fetchedAddress,
+                address);
 
-				assertEquals( "The retrieved address and the inserted address have different hashCodes!",
-					fetchedAddress.hashCode(), address.hashCode() );
-				++count;
-			}
-
-			assertEquals( "Selected more than 1 row!", 1, count );
+            assertEquals(
+                "The retrieved address and the inserted address have different hashCodes!",
+                fetchedAddress.hashCode(),
+                address.hashCode());
+            ++count;
+          }
+				}
+        assertEquals("Selected more than 1 row!", 1, count);
+      }
 		}
 	}
 
@@ -216,15 +232,15 @@ public class PGinetTest extends TestCase
 	 *	@return null on failure or a PGinet object which represents
 	 *		the value parameter.
 	 */
-	private PGinet makePGinet( String value )
+	private PGinet makePGinet(String value)
 	{
 		try
 		{
-			return( new PGinet( value ) );
+			return new PGinet(value);
 		}
-		catch( Exception e )
+		catch(Exception e)
 		{
-			return( null );
+			return null;
 		}
 	}
 }

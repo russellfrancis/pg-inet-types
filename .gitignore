@@ -1,0 +1,6 @@
+# IntelliJ IDEA files to exclude.
+.idea/
+*.iml
+
+# Build artifacts
+target/

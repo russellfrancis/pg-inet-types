@@ -1,7 +1,0 @@
-syntax: regexp
-
-nbproject
-^lib$
-^dist$
-^stage$
-^build$

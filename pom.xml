@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>us.ideasaur</groupId>
+  <artifactId>pg-inet-types</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <name>PostgreSQL networking extensions</name>
+
+  <packaging>jar</packaging>
+
+  <properties>
+    <java.source.version>8</java.source.version>
+    <java.target.version>8</java.target.version>
+
+    <postgresql.version>9.1-901-1.jdbc4</postgresql.version>
+
+    <junit.version>4.12</junit.version>
+    <org.testcontainers.postgresql.version>1.12.3</org.testcontainers.postgresql.version>
+
+    <maven.jar.plugin.version>3.2.0</maven.jar.plugin.version>
+    <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+  </properties>
+
+  <url>https://github.com/russellfrancis/pg-inet-types</url>
+
+  <licenses>
+    <license>
+      <name>Apache Software License 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>manual</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git@github.com:russellfrancis/pg-inet-types.git</connection>
+    <developerConnection>scm:git:git@github.com:russellfrancis/pg-inet-types.git</developerConnection>
+    <url>git@github.com:russellfrancis/pg-inet-types.git</url>
+  </scm>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/russellfrancis/pg-inet-types/issues</url>
+  </issueManagement>
+
+  <developers>
+    <developer>
+      <id>russell.francis</id>
+      <email>russ@metro-six.com</email>
+      <name>Russell Francis</name>
+      <roles>
+        <role>developer</role>
+        <role>maintainer</role>
+      </roles>
+    </developer>
+  </developers>
+
+  <dependencies>
+    <dependency>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>${postgresql.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>${org.testcontainers.postgresql.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${maven.jar.plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven.compiler.plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>7</source>
+          <target>7</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

@@ -6,45 +6,46 @@
 */
 package org.postgresql.test.net;
 
-import org.postgresql.test.TestUtil;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.postgresql.net.PGcidr;
-import junit.framework.TestCase;
-import java.sql.*;
-import java.net.*;
 
 /**
  *	Unit tests for the PGcidr data type.
  *
  *	@author Russell Francis (russ@metro-six.com)
  */
-public class PGcidrTest extends TestCase
+public class PGcidrTest extends BaseDatabaseTest
 {
 	private Connection dbConn;
 	private static final String tableName = "testpgcidr";
 
-	public PGcidrTest( String name )
-	{
-		super( name );
+	@Before
+	public void setUp() throws SQLException {
+		dbConn = openDB();
+		createTable(dbConn, tableName, "network cidr");
 	}
 
-	protected void setUp() throws Exception
-	{
-		dbConn = TestUtil.openDB();
-		TestUtil.createTable( dbConn, this.tableName, "network cidr" );
-	}
-
-	protected void tearDown() throws Exception
-	{
-		TestUtil.dropTable( dbConn, this.tableName );
+	@After
+	public void tearDown() throws SQLException {
+		dropTable(dbConn, tableName);
 	}
 
 	/**
  	 * 	This method will test that the PGcidr type refuses to create
 	 *	objects when passed invalid IPv4 based network addresses.
 	 */
-	public void testPGcidrIPv4InvalidNetworks() 
-	throws SQLException
-	{
+	@Test
+	public void testPGcidrIPv4InvalidNetworks() {
 		String[] invalidNetworks = {
 			"240.0.0.1/31",				// bits to the right of the netmask
 			"255.255.1/23",				// bits to the right of the netmask
@@ -65,12 +66,10 @@ public class PGcidrTest extends TestCase
 		};
 
 		// Test that we can create networks 
-		for( int i = 0; i < invalidNetworks.length; ++i )
-		{	
-			PGcidr network = this.makePGcidr( invalidNetworks[i] );
-			assertNull( "An invalid network was turned into a PGcidr object: " + 
-				invalidNetworks[i] + "' failed.", network );
-			
+		for (String invalidNetwork : invalidNetworks) {
+			PGcidr network = this.makePGcidr(invalidNetwork);
+			assertNull("An invalid network was turned into a PGcidr object: " +
+					invalidNetwork + "' failed.", network);
 		}
 	}
 
@@ -82,6 +81,7 @@ public class PGcidrTest extends TestCase
 	 *	and the they can be read from Postgres and that they maintain
 	 *	equality after the ordeal.</p>
 	 */
+	@Test
 	public void testPGcidrIPv4ValidNetworks() throws SQLException
 	{
 		// Each network should be unique in the list or this test
@@ -109,7 +109,8 @@ public class PGcidrTest extends TestCase
  	 * 	This method will test that the PGcidr type refuses to create
 	 *	objects when passed invalid IPv6 based network addresses.
 	 */
-	public void testPGcidrIPv6InvalidNetworks() throws SQLException
+	@Test
+	public void testPGcidrIPv6InvalidNetworks()
 	{
 		String[] invalidNetworks = {
 			"1234:1234:1234:1234:1234:1234:1234:1234:",			// superfluous trailing ':'
@@ -125,12 +126,11 @@ public class PGcidrTest extends TestCase
 		};
 
 		// Test that we can create networks 
-		for( int i = 0; i < invalidNetworks.length; ++i )
-		{	
-			PGcidr network = this.makePGcidr( invalidNetworks[i] );
-			assertNull( "An invalid network was turned into a PGcidr object: " + 
-				invalidNetworks[i] + "' failed.", network );
-			
+		for (String invalidNetwork : invalidNetworks) {
+			PGcidr network = this.makePGcidr(invalidNetwork);
+			assertNull("An invalid network was turned into a PGcidr object: " +
+					invalidNetwork + "' failed.", network);
+
 		}
 	}
 
@@ -143,6 +143,7 @@ public class PGcidrTest extends TestCase
 	 *	and the they can be read from Postgres and that they maintain
 	 *	equality after the ordeal.</p>
 	 */
+	@Test
 	public void testPGcidrIPv6ValidNetworks() throws SQLException
 	{
 		// Each network should be unique in the list or this test
@@ -176,44 +177,58 @@ public class PGcidrTest extends TestCase
 	private void ensureValidNetworks( String[] validNetworks )
 	throws SQLException
 	{
-		// Insert each of the networks into the table.
-		PreparedStatement s = dbConn.prepareStatement( TestUtil.insertSQL( tableName, "?" ) );
-		for( int i = 0;i < validNetworks.length; ++i )
-		{
-			PGcidr network = this.makePGcidr( validNetworks[i] );
-			assertNotNull( "A valid network was unable to be converted into a PGcidr object: '" +
-				validNetworks[i] + "' failed.", network );
+    // Insert each of the networks into the table.
+    try (PreparedStatement s =
+        dbConn.prepareStatement("INSERT INTO " + tableName + " (network) VALUES (?);")) {
+			for (String validNetwork : validNetworks) {
+				PGcidr network = this.makePGcidr(validNetwork);
+				assertNotNull(
+						"A valid network was unable to be converted into a PGcidr object: '"
+								+ validNetwork
+								+ "' failed.",
+						network);
 
-			s.setObject( 1, network );
-			assertEquals( 1, s.executeUpdate() );
-		}
-
-		s = dbConn.prepareStatement( "SELECT * FROM " + tableName + " WHERE network = ?" );
-		// Retrieve each of the networks from the table.
-		for( int i = 0; i < validNetworks.length; ++i )
-		{
-			PGcidr network = this.makePGcidr( validNetworks[i] );
-			assertNotNull( "A valid network was unable to be converted into a PGcidr object: '" +
-				validNetworks[i] + "' failed.", network );
-
-			s.setObject( 1, network );
-			ResultSet rs = 	s.executeQuery();
-			int count = 0;
-			while( rs.next() )
-			{
-				PGcidr fetchedNetwork = (PGcidr)rs.getObject( 1 );
-				assertNotNull( "Unable to fetch inserted network from the database: '" + validNetworks[i] +
-					"' failed.", network );
-
-				assertEquals( "The retrieved network and the inserted network are not equal!",
-					fetchedNetwork, network );
-
-				assertEquals( "The retrieved network and the inserted network have different hashCodes!",
-					fetchedNetwork.hashCode(), network.hashCode() );
-				++count;
+				s.setObject(1, network);
+				assertEquals(1, s.executeUpdate());
 			}
+    }
 
-			assertEquals( "Selected more than 1 row!", 1, count );
+    try (PreparedStatement s =
+        dbConn.prepareStatement("SELECT network FROM " + tableName + " WHERE network = ?")) {
+      // Retrieve each of the networks from the table.
+			for (String validNetwork : validNetworks) {
+				PGcidr network = this.makePGcidr(validNetwork);
+				assertNotNull(
+						"A valid network was unable to be converted into a PGcidr object: '"
+								+ validNetwork
+								+ "' failed.",
+						network);
+
+				s.setObject(1, network);
+				int count = 0;
+				try (ResultSet rs = s.executeQuery()) {
+					while (rs.next()) {
+						PGcidr fetchedNetwork = (PGcidr) rs.getObject(1);
+						assertNotNull(
+								"Unable to fetch inserted network from the database: '"
+										+ validNetwork
+										+ "' failed.",
+								network);
+
+						assertEquals(
+								"The retrieved network and the inserted network are not equal!",
+								fetchedNetwork,
+								network);
+
+						assertEquals(
+								"The retrieved network and the inserted network have different hashCodes!",
+								fetchedNetwork.hashCode(),
+								network.hashCode());
+						++count;
+					}
+				}
+				assertEquals("Selected more than 1 row!", 1, count);
+			}
 		}
 	}
 
@@ -231,11 +246,11 @@ public class PGcidrTest extends TestCase
 	{
 		try
 		{
-			return( new PGcidr( value ) );
+			return new PGcidr(value);
 		}
 		catch( Exception e )
 		{
-			return( null );
+			return null;
 		}
 	}
 }
